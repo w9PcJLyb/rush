@@ -1,0 +1,2 @@
+# rush
+Rush in Rust
