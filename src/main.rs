@@ -1,11 +1,8 @@
 use clap::{Parser, ArgAction};
 
-mod board;
-mod piece;
-mod solve;
+use rush::board::Board;
+use rush::solve::bfs;
 
-use crate::board::Board;
-use crate::solve::bfs;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -16,16 +13,17 @@ struct Args {
     verbose: bool,
 }
 
+
 fn main() {
     let args = Args::parse();
 
-    let mut board = Board::new(args.puzzle).unwrap();
+    let mut board = Board::from_string(args.puzzle).unwrap();
     if args.verbose {
         println!("Puzzle:");
         board.display();
     }
 
-    let (solved, solution) = bfs(&mut board);
+    let (solved, solution) = bfs(&board);
     if !solved {
         println!("Solution not found");
         return;

@@ -4,7 +4,9 @@ use std::collections::VecDeque;
 use crate::board::Board;
 
 
-pub fn bfs(board: &mut Board) -> (bool, Vec<(usize, i32)>) {
+pub fn bfs(board: &Board) -> (bool, Vec<(usize, i32)>) {
+    let mut board_mut = board.clone();
+
     let mut map: HashMap<Vec<usize>, (usize, i32)> = HashMap::new();
     let mut queue: VecDeque<Vec<usize>> = VecDeque::new();
 
@@ -13,14 +15,13 @@ pub fn bfs(board: &mut Board) -> (bool, Vec<(usize, i32)>) {
     map.insert(init_positions.clone(), (0, 0));
 
     while let Some(positions) = queue.pop_front() {
-        board.update_positions(&positions);
+        board_mut.update_positions(&positions);
 
-        if board.solved() {
-            board.update_positions(&init_positions);
+        if board_mut.solved() {
             return (true, restore_solution(positions, &map));
         }
 
-        for (piece_id, d) in board.movements() {
+        for (piece_id, d) in board_mut.movements() {
             let mut next_positions = positions.clone();
             if d > 0 {
                 next_positions[piece_id] += d as usize;

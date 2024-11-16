@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 
-use crate::piece::Piece;
-use crate::piece::Orientation;
+use crate::piece::{Piece, Orientation};
 
 
+#[derive(Clone)]
 pub struct Board {
     width: usize,
     height: usize,
@@ -14,7 +14,17 @@ pub struct Board {
 
 
 impl Board {
-    pub fn new(puzzle: String) -> Result<Board, String> {
+    pub fn new(width: usize, height: usize, primary_piece: Piece) -> Self {
+        Board {
+            width,
+            height,
+            pieces: vec![primary_piece],
+            walls: HashSet::new(),
+            primary_piece_id: 0,
+        }
+    }
+
+    pub fn from_string(puzzle: String) -> Result<Board, String> {
         let board_size_f = (puzzle.len() as f64).sqrt(); 
         let board_size = board_size_f.floor() as usize;
         if board_size * board_size != puzzle.len() {
@@ -260,5 +270,45 @@ impl Board {
         for (piece_id, new_position) in positions.iter().enumerate() {
             self.pieces[piece_id].p = *new_position;
         }
+    }
+
+    pub fn is_free(&self, x: usize, y: usize) -> bool {
+        for piece in self.pieces.iter() {
+            if piece.contains(x, y) {
+                return false;
+            }
+        }
+        for (x_, y_) in self.walls.iter() {
+            if x == *x_ && y == *y_ {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    pub fn add_wall(&mut self, x: usize, y: usize) {
+        if !self.is_free(x, y) {
+            panic!("The cell ({}, {}) is already occupied", x, y)
+        }
+        self.walls.insert((x, y));
+    }
+
+    pub fn add_piece(&mut self, piece: &Piece) {
+        if piece.is_horizontal() {
+            let y = piece.row;
+            for x in piece.p..(piece.p + piece.size) {
+                if !self.is_free(x, y) {
+                    panic!("The cell ({}, {}) is already occupied", x, y)
+                }
+            }
+        } else {
+            let x = piece.row;
+            for y in piece.p..(piece.p + piece.size) {
+                if !self.is_free(x, y) {
+                    panic!("The cell ({}, {}) is already occupied", x, y)
+                }
+            }
+        }
+        self.pieces.push(piece.clone());
     }
 }
